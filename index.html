@@ -29,7 +29,7 @@ body.fullscreen-fallback header{display:none}body.fullscreen-fallback main{max-w
 <section class="view" id="setlists"><div class="topline"><h1 data-i18n="Setlists">Setlists</h1><button class="primary" id="newSetlist" data-i18n="＋ New setlist">＋ New setlist</button></div><div id="setlistList"></div></section>
 <section class="view" id="about"><h1 data-i18n="About ScoreFlow">About ScoreFlow</h1><div class="panel"><p data-i18n="Personal PDF sheet music library, setlists and reader. Your PDFs are stored on this device in your browser's IndexedDB.">Personal PDF sheet music library, setlists and reader. Your PDFs are stored on this device in your browser's IndexedDB.</p><p class="note" data-i18n="Keep a backup. Clearing browser site data, private browsing, or device changes may remove your library. The first load requires internet to fetch the PDF rendering engine; offline use afterward depends on successful browser caching. For reliable offline installation, deploy all app assets locally.">Keep a backup. Clearing browser site data, private browsing, or device changes may remove your library. The first load requires internet to fetch the PDF rendering engine; offline use afterward depends on successful browser caching. For reliable offline installation, deploy all app assets locally.</p><button class="primary" id="backupBtn2" data-i18n="Export backup">Export backup</button> <button class="secondary" id="restoreBtn" data-i18n="Restore backup">Restore backup</button><input type="file" id="restoreInput" accept=".json,application/json" hidden><p class="muted" data-i18n="No account, cloud upload or server-side PDF storage. Imported PDFs never leave your device through this app.">No account, cloud upload or server-side PDF storage. Imported PDFs never leave your device through this app.</p></div></section>
 </main>
-<div class="reader" id="reader"><div class="readerbar" id="readerbar"><button id="closeReader" title="Back">←</button><span class="name" id="readerTitle"></span><button id="annotateBtn" title="Annotations">✎</button><button id="fitBtn" title="Fit width">↔</button><button id="fullscreenBtn" title="Fullscreen">⛶</button><button id="quickUndo" title="Undo annotation">↶</button><button id="quickRedo" title="Redo annotation">↷</button><button id="toggleBars" title="Compact controls">◫</button></div><div class="stage" id="stage"><div id="pageWrap"><canvas id="pdfCanvas"></canvas><canvas id="annotationCanvas"></canvas></div></div><div class="annotationTools" id="annotationTools" hidden><button data-tool="pen">✎ <span data-i18n="Pen">Pen</span></button><button data-tool="highlight">▰ <span data-i18n="Highlight">Highlight</span></button><button data-tool="text">T <span data-i18n="Text">Text</span></button><button data-tool="move">✥ <span data-i18n="Move">Move</span></button><button data-tool="erase">⌫ <span data-i18n="Erase">Erase</span></button><label><span data-i18n="Color">Color</span> <input id="inkColor" type="color" value="#e13c3c"></label><label><span data-i18n="Size">Size</span> <input id="inkSize" type="range" min="1" max="14" value="3"></label><button id="undoInk" title="Undo">↶</button><button id="redoInk" title="Redo">↷</button><button id="exitInk" title="Finish">✓</button></div><div class="foot"><button id="prevPage">‹</button><span class="page"><span data-i18n="Page">Page</span> <input type="number" id="pageInput" min="1" value="1"> / <span id="totalPages">1</span></span><button id="nextPage">›</button><button id="zoomOut">−</button><span id="zoomLabel" style="font-size:13px;min-width:43px;text-align:center">100%</span><button id="zoomIn">＋</button></div></div>
+<div class="reader" id="reader"><div class="readerbar" id="readerbar"><button id="closeReader" title="Back">←</button><span class="name" id="readerTitle"></span><button id="quickUndo" title="Undo annotation" aria-label="Undo annotation">↶</button><button id="quickRedo" title="Redo annotation" aria-label="Redo annotation">↷</button><button id="annotateBtn" title="Annotations">✎</button><button id="fitBtn" title="Fit width">↔</button><button id="fullscreenBtn" title="Fullscreen">⛶</button><button id="quickUndo" title="Undo annotation">↶</button><button id="quickRedo" title="Redo annotation">↷</button><button id="toggleBars" title="Compact controls">◫</button></div><div class="stage" id="stage"><div id="pageWrap"><canvas id="pdfCanvas"></canvas><canvas id="annotationCanvas"></canvas></div></div><div class="annotationTools" id="annotationTools" hidden><button data-tool="pen">✎ <span data-i18n="Pen">Pen</span></button><button data-tool="highlight">▰ <span data-i18n="Highlight">Highlight</span></button><button data-tool="text">T <span data-i18n="Text">Text</span></button><button data-tool="move">✥ <span data-i18n="Move">Move</span></button><button data-tool="erase">⌫ <span data-i18n="Erase">Erase</span></button><label><span data-i18n="Color">Color</span> <input id="inkColor" type="color" value="#e13c3c"></label><label><span data-i18n="Size">Size</span> <input id="inkSize" type="range" min="1" max="14" value="3"></label><button id="undoInk" title="Undo">↶</button><button id="redoInk" title="Redo">↷</button><button id="exitInk" title="Finish">✓</button></div><div class="foot"><button id="prevPage">‹</button><span class="page"><span data-i18n="Page">Page</span> <input type="number" id="pageInput" min="1" value="1"> / <span id="totalPages">1</span></span><button id="nextPage">›</button><button id="zoomOut">−</button><span id="zoomLabel" style="font-size:13px;min-width:43px;text-align:center">100%</span><button id="zoomIn">＋</button></div></div>
 <dialog id="editDialog"><h2 id="dialogTitle">Edit</h2><label id="fieldLabel">Title</label><input id="dialogInput"><div class="actions"><button class="secondary" id="cancelDialog" data-i18n="Cancel">Cancel</button><button class="primary" id="saveDialog" data-i18n="Save">Save</button></div></dialog>
 <dialog id="listDialog"><h2 id="listDialogTitle"></h2><div id="listDialogContent"></div><div class="actions"><button class="secondary" id="closeListDialog" data-i18n="Done">Done</button></div></dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -85,16 +85,60 @@ $('undoInk').onclick=()=>{if(!inkHistory.length)return;redoHistory.push(JSON.str
 $('quickUndo').onclick=()=>$('undoInk').click();$('quickRedo').onclick=()=>$('redoInk').click();
 $('redoInk').onclick=()=>{if(!redoHistory.length)return;inkHistory.push(JSON.stringify(inkItems()));currentSong.annotations[page]=JSON.parse(redoHistory.pop());drawInk();inkSave()};
 
+$('quickUndo').onclick=()=> $('undoInk').click();
+$('quickRedo').onclick=()=> $('redoInk').click();
+let pageCache=new Map(),pendingPreviews=new Map(),pdfTask=null;
 let listContext=null;
-async function openSong(id,listId=null){let x=songs.find(s=>s.id===id);if(!x)return;if(!window.pdfjsLib){alert('PDF renderer unavailable. Connect to the internet once and reload.');return}try{if(pdf){const old=pdf;pdf=null;old.destroy().catch(()=>{})}const data=new Uint8Array(await x.blob.arrayBuffer());pdf=await pdfjsLib.getDocument({data}).promise;currentSong=x;inkHistory=[];redoHistory=[];setInkMode(false);listContext=listId;page=Math.min(Math.max(x.lastPage||1,1),pdf.numPages);scale=1;$('readerTitle').textContent=x.title;$('totalPages').textContent=pdf.numPages;$('reader').classList.add('open');$('reader').classList.remove('hidebars');await fitWidth();preloadAdjacent()}catch(e){console.error(e);alert('Could not open PDF: '+e.message)}}
-function preloadAdjacent(){const doc=pdf,at=page;if(!doc)return;setTimeout(()=>{if(pdf!==doc)return;for(const n of [at+1,at-1])if(n>=1&&n<=doc.numPages)doc.getPage(n).catch(()=>{})},80)}
-async function fitWidth(){if(!pdf)return;let p=await pdf.getPage(page);let v=p.getViewport({scale:1});scale=Math.max(.2,($('stage').clientWidth-24)/v.width);renderPage()}
-async function renderPage(){if(!pdf)return;let token=++renderToken;try{let p=await pdf.getPage(page);if(token!==renderToken)return;let v=p.getViewport({scale});let canvas=$('pdfCanvas'),ctx=canvas.getContext('2d');let ratio=Math.min(window.devicePixelRatio||1,1.35);canvas.width=Math.floor(v.width*ratio);canvas.height=Math.floor(v.height*ratio);canvas.style.width=v.width+'px';canvas.style.height=v.height+'px';$('pageInput').value=page;$('zoomLabel').textContent=Math.round(scale*100)+'%';$('stage').scrollTop=0;$('stage').scrollLeft=0;await p.render({canvasContext:ctx,viewport:v,transform:[ratio,0,0,ratio,0,0]}).promise;if(token!==renderToken)return;drawInk();preloadAdjacent();if(currentSong){currentSong.lastPage=page;clearTimeout(pageSaveTimer);pageSaveTimer=setTimeout(()=>{if(currentSong)put('songs',currentSong).catch(console.error)},1100)}}catch(e){if(e.name!=='RenderingCancelledException')console.error(e)}}
+async function openSong(id,listId=null){
+ const x=songs.find(s=>s.id===id);if(!x)return;
+ if(!window.pdfjsLib){alert('PDF renderer unavailable. Connect to the internet once and reload.');return}
+ try{
+  const same=currentSong?.id===id&&pdf;
+  if(!same){++renderToken;pageCache.clear();pendingPreviews.clear();if(pdf){try{await pdf.destroy()}catch(e){console.warn(e)}}pdf=null;
+   const data=new Uint8Array(await x.blob.arrayBuffer());
+   pdfTask=pdfjsLib.getDocument({data,disableAutoFetch:true,disableStream:true});
+   pdf=await pdfTask.promise;
+  }
+  currentSong=x;inkHistory=[];redoHistory=[];setInkMode(false);listContext=listId;
+  page=Math.min(Math.max(x.lastPage||1,1),pdf.numPages);scale=1;
+  $('readerTitle').textContent=x.title;$('totalPages').textContent=pdf.numPages;
+  $('reader').classList.add('open');$('reader').classList.remove('hidebars');
+  await fitWidth();
+ }catch(e){console.error(e);alert('Could not open PDF: '+e.message)}
+}
+async function fitWidth(){if(!pdf)return;const p=await pdf.getPage(page);const v=p.getViewport({scale:1});scale=Math.max(.2,($('stage').clientWidth-24)/v.width);await renderPage()}
+function cacheKey(n,z){return n+':'+Math.round(z*1000)}
+async function getPageBitmap(n,z){
+ const key=cacheKey(n,z);if(pageCache.has(key)){const cached=pageCache.get(key);pageCache.delete(key);pageCache.set(key,cached);return cached}
+ if(pendingPreviews.has(key))return pendingPreviews.get(key);
+ const documentRef=pdf;
+ const promise=(async()=>{const p=await documentRef.getPage(n);const v=p.getViewport({scale:z});
+  const ratio=Math.min(window.devicePixelRatio||1,1.5);
+  const c=document.createElement('canvas');c.width=Math.max(1,Math.floor(v.width*ratio));c.height=Math.max(1,Math.floor(v.height*ratio));
+  await p.render({canvasContext:c.getContext('2d',{alpha:false}),viewport:v,transform:[ratio,0,0,ratio,0,0]}).promise;
+  if(pdf===documentRef){pageCache.set(key,{canvas:c,width:v.width,height:v.height});while(pageCache.size>5)pageCache.delete(pageCache.keys().next().value)}
+  return {canvas:c,width:v.width,height:v.height};
+ })();
+ pendingPreviews.set(key,promise);try{return await promise}finally{pendingPreviews.delete(key)}
+}
+async function renderPage(){
+ if(!pdf)return;const token=++renderToken,n=page,z=scale,documentRef=pdf;
+ try{
+  const bitmap=await getPageBitmap(n,z);if(token!==renderToken||pdf!==documentRef)return;
+  const canvas=$('pdfCanvas');canvas.width=bitmap.canvas.width;canvas.height=bitmap.canvas.height;
+  canvas.style.width=bitmap.width+'px';canvas.style.height=bitmap.height+'px';
+  canvas.getContext('2d',{alpha:false}).drawImage(bitmap.canvas,0,0);
+  $('pageInput').value=n;$('zoomLabel').textContent=Math.round(z*100)+'%';
+  $('stage').scrollTop=0;$('stage').scrollLeft=0;drawInk();
+  if(currentSong){currentSong.lastPage=n;put('songs',currentSong).catch(console.error)}
+  for(const near of [n+1,n-1])if(near>=1&&near<=pdf.numPages&&!pageCache.has(cacheKey(near,z)))setTimeout(()=>{if(pdf===documentRef&&scale===z)getPageBitmap(near,z).catch(console.warn)},80);
+ }catch(e){if(token===renderToken){console.error(e);alert('Page could not be displayed: '+e.message)}}
+}
 async function goPage(n){if(!pdf)return;if(n<1||n>pdf.numPages){if(listContext){let l=setlists.find(x=>x.id===listContext);let i=l?.songIds.indexOf(currentSong.id)??-1;let next=n>pdf.numPages?i+1:i-1;if(l&&next>=0&&next<l.songIds.length){await openSong(l.songIds[next],listContext);if(n<1){page=pdf.numPages;await renderPage()}return}}return}page=n;inkHistory=[];redoHistory=[];renderPage()}
 $('prevPage').onclick=()=>goPage(page-1);$('nextPage').onclick=()=>goPage(page+1);$('pageInput').onchange=e=>goPage(Number(e.target.value));$('zoomIn').onclick=()=>{scale=Math.min(5,scale*1.2);renderPage()};$('zoomOut').onclick=()=>{scale=Math.max(.2,scale/1.2);renderPage()};$('fitBtn').onclick=fitWidth;
 $('closeReader').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});setInkMode(false);$('reader').classList.remove('open');currentSong=null;listContext=null;refresh()};
 $('toggleBars').onclick=()=>$('reader').classList.toggle('hidebars');
-async function toggleFullscreen(){try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen()}else{document.body.classList.toggle('fullscreen-fallback')}}catch(err){document.body.classList.toggle('fullscreen-fallback')}} 
+async function toggleFullscreen(){if($('reader').classList.contains('hidebars'))$('reader').classList.remove('hidebars');try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen()}else{document.body.classList.toggle('fullscreen-fallback')}}catch(err){document.body.classList.toggle('fullscreen-fallback')}} 
 $('fullscreenBtn').onclick=toggleFullscreen;
 $('appFullscreenBtn').onclick=toggleFullscreen;
 document.addEventListener('fullscreenchange',()=>{const on=!!document.fullscreenElement;$('appFullscreenBtn').textContent=on?'⤢':'⛶';$('fullscreenBtn').textContent=on?'⤢':'⛶'});
