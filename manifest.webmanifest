@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "ScoreFlow",
+  "short_name": "ScoreFlow",
+  "description": "Offline sheet music library, PDF reader, setlists and annotations",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101722",
+  "theme_color": "#152339",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
