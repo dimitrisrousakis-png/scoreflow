@@ -20,8 +20,9 @@
 [data-theme="dark"] .annotationTools button.selected{background:#126a9e}
 [data-theme="dark"] .stage{background:#111923}
 [data-theme="dark"] #pdfCanvas{background:white}
+body.fullscreen-fallback header{display:none}body.fullscreen-fallback main{max-width:none}body.fullscreen-fallback .reader{inset:0}body.fullscreen-fallback .tabs{position:sticky;top:0;z-index:3}
 </style></head><body>
-<header><span style="font-size:25px">♫</span><b>ScoreFlow</b><span class="pill">v0.7</span><button id="themeBtn" title="Toggle dark mode" aria-label="Toggle dark mode">☾</button><button id="languageBtn" title="Switch language" style="font-size:14px;font-weight:700;border:1px solid #65758a;border-radius:8px;padding:7px">ΕΛ</button><button title="Backup / restore" id="backupBtn">⇩</button></header>
+<header><span style="font-size:25px">♫</span><b>ScoreFlow</b><span class="pill">v0.8</span><button id="appFullscreenBtn" title="Fullscreen" aria-label="Fullscreen">⛶</button><button id="themeBtn" title="Toggle dark mode" aria-label="Toggle dark mode">☾</button><button id="languageBtn" title="Switch language" style="font-size:14px;font-weight:700;border:1px solid #65758a;border-radius:8px;padding:7px">ΕΛ</button><button title="Backup / restore" id="backupBtn">⇩</button></header>
 <nav class="tabs"><button class="active" data-tab="library" data-i18n="Library">Library</button><button data-tab="setlists" data-i18n="Setlists">Setlists</button><button data-tab="about" data-i18n="About">About</button></nav>
 <main>
 <section class="view active" id="library"><div class="topline"><h1 data-i18n="My music">My music</h1><button class="primary" id="importBtn" data-i18n="＋ Import PDFs">＋ Import PDFs</button></div><input id="fileInput" type="file" accept="application/pdf,.pdf" multiple hidden><input class="search" id="search" data-i18n-placeholder="Search title or composer…" placeholder="Search title or composer…"><div class="panel"><div id="libraryList"></div></div></section>
@@ -91,7 +92,11 @@ async function goPage(n){if(!pdf)return;if(n<1||n>pdf.numPages){if(listContext){
 $('prevPage').onclick=()=>goPage(page-1);$('nextPage').onclick=()=>goPage(page+1);$('pageInput').onchange=e=>goPage(Number(e.target.value));$('zoomIn').onclick=()=>{scale=Math.min(5,scale*1.2);renderPage()};$('zoomOut').onclick=()=>{scale=Math.max(.2,scale/1.2);renderPage()};$('fitBtn').onclick=fitWidth;
 $('closeReader').onclick=()=>{setInkMode(false);$('reader').classList.remove('open');currentSong=null;listContext=null;refresh()};
 $('toggleBars').onclick=()=>$('reader').classList.toggle('hidebars');
-$('fullscreenBtn').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else $('reader').requestFullscreen?.().catch(()=>{})};
+async function toggleFullscreen(){try{if(document.fullscreenElement){await document.exitFullscreen()}else if(document.documentElement.requestFullscreen){await document.documentElement.requestFullscreen()}else{document.body.classList.toggle('fullscreen-fallback')}}catch(err){document.body.classList.toggle('fullscreen-fallback')}} 
+$('fullscreenBtn').onclick=toggleFullscreen;
+$('appFullscreenBtn').onclick=toggleFullscreen;
+document.addEventListener('fullscreenchange',()=>{const on=!!document.fullscreenElement;$('appFullscreenBtn').textContent=on?'⤢':'⛶';$('fullscreenBtn').textContent=on?'⤢':'⛶'});
+
 let touchStart=null,pinchDist=null,pinchScale=1;
 $('stage').addEventListener('touchstart',e=>{if(editMode)return;if(e.touches.length===2){pinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);pinchScale=scale;touchStart=null}else if(e.touches.length===1){touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY,t:Date.now()}}},{passive:true});
 $('stage').addEventListener('touchend',e=>{if(pinchDist&&e.touches.length<2){pinchDist=null;return}if(!touchStart||e.changedTouches.length!==1)return;let dx=e.changedTouches[0].clientX-touchStart.x,dy=e.changedTouches[0].clientY-touchStart.y;if(Math.abs(dx)>85&&Math.abs(dy)<65&&Date.now()-touchStart.t<600){let st=$('stage');if(st.scrollWidth<=st.clientWidth+20)goPage(page+(dx<0?1:-1))}touchStart=null},{passive:true});
@@ -103,5 +108,5 @@ async function backup(){let data={version:1,songs:[],setlists};for(let s of song
 $('backupBtn').onclick=backup;$('backupBtn2').onclick=backup;$('restoreBtn').onclick=()=>$('restoreInput').click();
 $('restoreInput').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let data=JSON.parse(await f.text());if(data.version!==1||!Array.isArray(data.songs)||!Array.isArray(data.setlists))throw Error('Unsupported backup format');if(!confirm('Restore backup? Existing items with the same IDs will be replaced.'))return;for(let s of data.songs){let raw=atob(s.blob),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);s.blob=new Blob([bytes],{type:'application/pdf'});await put('songs',s)}for(let l of data.setlists)await put('setlists',l);await refresh();alert('Backup restored')}catch(err){alert('Restore failed: '+err.message)}e.target.value=''};
 (async()=>{try{translateUI();db=await openDB();await refresh()}catch(e){alert('Local storage is unavailable: '+e.message)}})();
-if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js?v=7',{updateViaCache:'none'}).catch(console.warn);
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js?v=8',{updateViaCache:'none'}).catch(console.warn);
 </script></body></html>
